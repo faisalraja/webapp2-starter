@@ -14,6 +14,7 @@ from lib import basehandler
 
 app = webapp2.WSGIApplication(debug=basehandler.IS_DEV, config=config.webapp2_config, routes=routes.get_routes())
 
+
 # defined custom error handlers
 class Webapp2HandlerAdapter(webapp2.BaseHandlerAdapter):
 

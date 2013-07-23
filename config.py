@@ -1,8 +1,7 @@
+import memcache as mc
 
-# Restrict appspot.com put None if you don't want to restrict username/password
-# This is useful if you don't want duplicate content serving on project-id.appspot.com
-restricted_auth = None  # 'admin:admin'
-
+# memcache client
+memcache = mc.Client(['127.0.0.1:11211'], debug=True)
 
 # webapp2 configurations
 # Generating random hex
@@ -14,9 +13,7 @@ webapp2_config = {
     },
 }
 
-
 # Remember that memcache can be evicted
-# so if you have important stuff in session like carts use datastore
 session_backend = 'mc_session'
 
 
@@ -24,9 +21,3 @@ session_backend = 'mc_session'
 # rate_limit = (200, 60) # 200 request / minute
 # rate_limit = (10000, 3600) # 10000 request / hour
 rate_limit = None
-
-
-# Create your CLIENT_ID at
-# https://code.google.com/apis/console
-# make sure to add http://localhost:8080 if thats what you will test it on
-endpoints_client_id = 'YOUR_CLIENT_ID'

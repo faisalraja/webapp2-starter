@@ -11,7 +11,6 @@ class HomeHandler(BaseHandler):
 
     def get(self):
         params = {}
-        logging.info(os.environ)
         return self.render_template('main/index.html', **params)
 
 

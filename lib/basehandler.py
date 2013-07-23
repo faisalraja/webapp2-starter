@@ -1,3 +1,5 @@
+import time
+import hashlib
 import logging
 import os
 import webapp2
@@ -9,6 +11,15 @@ from lib import jsonrpc
 # Initialize constants & stuff for static files
 
 IS_DEV = os.environ.get('PYCHARM_HOSTED') == '1'
+
+# Bot user agents
+BOT_USER_AGENTS = [
+    'Googlebot',
+    'Yahoo! Slurp',
+    'YahooSeeker',
+    'bingbot',
+    'iaskspider'
+]
 
 # End
 
@@ -61,12 +72,43 @@ class BaseHandler(webapp2.RequestHandler):
 
     def dispatch(self):
         # Here there are bunch of stuff happening
+
+        # rate limiting check
+        if config.rate_limit:
+            self._rate_limiter()
+
         try:
             # Dispatch the request.
             webapp2.RequestHandler.dispatch(self)
         finally:
             # Save all sessions.
             self.session_store.save_sessions(self.response)
+
+    def _rate_limiter(self):
+        # Rate limiting for bots & save resources
+        # The reason we use 503 is because webapp2 does not have 429 code
+        # in it's supported codes because it's not official status code yet
+        user_agent = self.request.headers.get('User-Agent', 'Googlebot')
+        robot = filter(lambda bot: user_agent.find(bot) != -1, BOT_USER_AGENTS)
+        if robot:
+            # use current minute cache
+            cache_id = 'rate_limiter_%s' % hashlib.md5(robot.pop()).hexdigest()
+            request_count = config.memcache.incr(cache_id)
+            if not request_count and config.memcache.set(cache_id, '1', config.rate_limit[1]):
+                request_count = 1
+
+            if request_count >= config.rate_limit[0]:
+                self.abort(503)
+        else:
+            # rate limiters for non bots non logged users
+            request_count, time_started = self.session.get('rate_limiter_request', (0, time.time()))
+            request_count += 1
+            seconds = time.time() - time_started if time.time() > time_started else 0
+            if seconds > config.rate_limit[1]:
+                request_count, time_started = (0, time.time())
+            elif request_count >= config.rate_limit[0] and seconds < config.rate_limit[1]:
+                self.abort(503)
+            self.session['rate_limiter_request'] = (request_count, time_started)
 
     @webapp2.cached_property
     def session_store(self):
@@ -131,8 +173,7 @@ class BaseHandler(webapp2.RequestHandler):
             'path': self.request.path,
             'query_string': self.request.query_string,
             'is_dev': IS_DEV,
-            'base_template': base_template,
-            'endpoints_client_id': config.endpoints_client_id
+            'base_template': base_template
         })
 
         if self.messages:
