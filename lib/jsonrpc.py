@@ -30,14 +30,26 @@ ERROR_MESSAGE = {
 }
 
 
+class ServerException(Exception):
+    """
+    code -32000 to -32099 for custom server errors
+    """
+    def __init__(self, data=None, message='Server error', code=-32000):
+        Exception.__init__(self, message)
+        self.data = data
+        self.code = code
+
+
 class Server(object):
     response = None
 
     def __init__(self, obj):
         self.obj = obj
 
-    def error(self, id, code, data=None):
-        error_value = {'code': code, 'message': ERROR_MESSAGE.get(code, 'Server error'), 'data': data}
+    def error(self, id, code, message='Server error', data=None):
+        error_value = {'code': code, 'message': ERROR_MESSAGE.get(code, message)}
+        if data:
+            error_value['data'] = data
         return self.result({'jsonrpc': VERSION, 'error': error_value, 'id': id})
 
     def result(self, result):
@@ -121,6 +133,8 @@ class Server(object):
                 result = method(**clean_params)
             else:
                 result = method(*params)
+        except ServerException as e:
+            return self.error(id, e.code, e.message, e.data)
         except:
             logging.error(sys.exc_info())
             traceback.print_exc()

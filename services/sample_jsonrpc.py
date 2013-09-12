@@ -1,5 +1,6 @@
 import logging
 from lib.basehandler import RpcHandler
+from lib.jsonrpc import ServerException
 
 ERROR_LOGIN = 'Login Error'
 TYPE_ERROR = 'error'
@@ -30,3 +31,7 @@ class ApiHandler(RpcHandler):
     def hello(self, world, limit=1):
 
         return [world for i in range(limit)]
+
+    def sample_error(self):
+        # this is good for any types of errors
+        raise ServerException('Just a sample error')
