@@ -1,5 +1,7 @@
 WebOb
-Paste
+gevent
+ws4py
+peewee
 webapp2
 Jinja2
 python-memcached

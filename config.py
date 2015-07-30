@@ -21,3 +21,7 @@ session_backend = 'mc_session'
 # rate_limit = (200, 60) # 200 request / minute
 # rate_limit = (10000, 3600) # 10000 request / hour
 rate_limit = None
+
+
+# database config | change to better path
+db = '/tmp/sample.db'

@@ -9,14 +9,13 @@ _routes = [
     ]),
 
     PathPrefixRoute('/user',[
-        RedirectRoute('/login', 'web.handlers.LoginHandler', name='user-login', strict_slash=True),
-        # Lazy loading sample
-        RedirectRoute('/logout', 'web.handlers.LogoutHandler', name='user-logout', strict_slash=True)
+        RedirectRoute('/login', handlers.LoginHandler, name='user-login', strict_slash=True),
+        RedirectRoute('/logout', handlers.LogoutHandler, name='user-logout', strict_slash=True)
     ]),
 
     # Main Routes
     RedirectRoute('/', handlers.HomeHandler, name='home', strict_slash=True),
-    # Another Lazy loading sample, will only be loaded once its routed
+    RedirectRoute('/<folder:(img|css|js|html|fonts)>/<path:(.+)>', handlers.StaticHandler, name='static', strict_slash=True),
     RedirectRoute('/rpc', sample_jsonrpc.ApiHandler, name='rpc', strict_slash=True)
 ]
 

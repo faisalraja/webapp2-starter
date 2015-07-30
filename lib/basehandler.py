@@ -1,9 +1,11 @@
+import json
 import time
 import hashlib
 import logging
 import os
 import webapp2
 import config
+from ws4py.websocket import WebSocket
 from webapp2_extras import jinja2
 from webapp2_extras import sessions
 from lib import jsonrpc
@@ -64,6 +66,7 @@ def admin_user_required(handler):
                 self.abort(403)
 
     return check_login
+
 
 class BaseHandler(webapp2.RequestHandler):
     """
@@ -188,3 +191,15 @@ class RpcHandler(BaseHandler):
     def post(self):
         server = jsonrpc.Server(self)
         server.handle(self.request, self.response)
+
+
+class BaseWebSocket(WebSocket):
+
+    def received_message(self, message):
+        data = json.loads(message.data)
+        result = getattr(self, data['event'])(**data['data'])
+
+        self.send(json.dumps({
+            'event': data['event'],
+            'result': result
+        }))

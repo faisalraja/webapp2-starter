@@ -8,7 +8,7 @@
     <meta name="description" content="">
 
     <!-- Le styles -->
-    <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
     {# static_url method helps you with automatic cookieless domain using the version of your app #}
     {# parameter 1 helps you divide the loading into different subdomain #}
     <link href="{{ static_url(1) }}/css/style.css" rel="stylesheet">
@@ -50,6 +50,15 @@
                         </ul>
                     </li>
 
+                    <li class="dropdown">
+                        <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                            WebSocket Demo
+                            <b class="caret"></b>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a href="#" class="ws-btn" data-event="add" data-params='{"a": 5, "b": 3}'>Add</a></li>
+                        </ul>
+                    </li>
                     <!-- End Services Demo -->
                 </ul>
 
@@ -87,8 +96,8 @@
       </div>
     </div>
 
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
-<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/js/bootstrap.min.js"></script>
 
 <!--jsonrpc demo-->
 <script src="{{ static_url(1) }}/js/demo.js"></script>

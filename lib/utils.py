@@ -1,21 +1,35 @@
+import inspect
+import logging
+import gevent
+from peewee import SqliteDatabase
+import sys
+import config
 
 
-def pluralize(word, **kwargs):
-    count = kwargs.get('count', None)
-    plural_suffix = kwargs.get('plural_suffix', 's')
-    singular_suffix = kwargs.get('singular_suffix', None)
+def background_service():
+    """Placeholder only for demo
+    :return:
+    """
+    while 1:
+        # logging.debug('Background Counter: {}'.format(ctr))
+        gevent.sleep(1)
 
-    if count is not None:
-        word = [count, word]
-    elif not isinstance(word, list):
-        word = word.split(' ')
-    try:
-        if int(word[0]) != 1:
-            word[1] += plural_suffix
-        elif singular_suffix:
-            word[1] += singular_suffix
-    except ValueError:  # Invalid string that's not a number.
-        pass
-    if count is not None:
-        return word.pop()
-    return ' '.join(word)
+
+def get_db():
+    """Get Application Database
+    :return: DB
+    """
+    global DB
+    if DB is None:
+        DB = SqliteDatabase(config.db)
+
+    return DB
+
+
+def get_members_by_parent(module, parent):
+    """Get all models that extends BaseModel
+    :return:
+    """
+    return dict(member
+                for member in inspect.getmembers(sys.modules[module if type(module) is str else module.__name__],
+                                                 lambda c: inspect.isclass(c) and c.__base__ is parent))

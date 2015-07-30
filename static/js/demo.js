@@ -33,3 +33,29 @@ $('a.batch-btn').click(function(e){
         $('#main-container').prepend('<div class="alert alert-success">Response: ' + JSON.stringify(response) + '</div>');
     }, "json");
 });
+
+
+//Websocket
+var ws = new WebSocket('ws://' + window.location.hostname + ':9000');
+
+ws.onopen = function (event) {
+    console.log('connected to socket');
+};
+
+ws.onmessage = function (event) {
+    $('#main-container').prepend('<div class="alert alert-success">Response: ' + event.data + '</div>');
+
+};
+
+$('a.ws-btn').click(function (e) {
+    var btn = $(this),
+        request = JSON.stringify({
+            event: btn.data('event'),
+            data: btn.data('params')
+        });
+    e.preventDefault();
+
+    ws.send(request);
+
+    $('#main-container').prepend('<div class="alert alert-info">Request: ' + request + '</div>');
+});

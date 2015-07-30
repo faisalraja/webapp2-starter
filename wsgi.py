@@ -4,13 +4,17 @@ If you want to optimize your frontend you should probably start with
 using less and having a script the merge and compress them
 """
 import logging
-from paste.cascade import Cascade
-from paste.urlparser import StaticURLParser
 import webapp2
 import config
 import routes
+from services import sample_websocket
 from web import errors
-from lib import basehandler
+from lib import basehandler, utils
+from ws4py.server.geventserver import WSGIServer
+from ws4py.server.wsgiutils import WebSocketWSGIApplication
+import gevent.monkey
+gevent.monkey.patch_all()
+
 
 app = webapp2.WSGIApplication(debug=basehandler.IS_DEV, config=config.webapp2_config, routes=routes.get_routes())
 
@@ -32,18 +36,22 @@ app.error_handlers[404] = Webapp2HandlerAdapter(errors.Error404Handler)
 app.error_handlers[503] = Webapp2HandlerAdapter(errors.Error503Handler)
 app.error_handlers[500] = Webapp2HandlerAdapter(errors.Error500Handler)
 
-# Static File Serving
-static_app = StaticURLParser("static/")
 
-# Check static files first then fallback
-application = Cascade([static_app, app])
+if __name__ == '__main__':
+    logger = logging.getLogger()
+    logger.setLevel(logging.DEBUG)
 
-if __name__ == '__main__' and basehandler.IS_DEV:
-    import paste.reloader as reloader
-    reloader.install(10)
+    http_server = WSGIServer(('', 8080), app)
+    ws_server = WSGIServer(('', 9000), WebSocketWSGIApplication(handler_cls=sample_websocket.Commands))
 
-    from paste.translogger import TransLogger
-    application = TransLogger(application, logger_name=None)
+    greenlets = [
+        gevent.spawn(http_server.serve_forever),
+        gevent.spawn(utils.background_service),
+        gevent.spawn(ws_server.serve_forever)
+    ]
 
-    from paste import httpserver
-    httpserver.serve(application, host='127.0.0.1', port='8080')
+    try:
+        gevent.joinall(greenlets)
+    except KeyboardInterrupt:
+        http_server.stop()
+        print 'Stopping'
